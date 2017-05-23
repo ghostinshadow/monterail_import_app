@@ -10,6 +10,8 @@ RSpec.describe Operation do
     it{ is_expected.to respond_to(:status)}
     it{ is_expected.to respond_to(:kind)}
     it{ is_expected.to respond_to(:company_id)}
+    it{ is_expected.to respond_to(:company)}
+    it{ is_expected.to respond_to(:categories)}
   end
 
   let(:errors){ subject.errors.full_messages}
@@ -128,6 +130,27 @@ RSpec.describe Operation do
     it "returns company object" do
       subject = create(:operation)
       expect(subject.company).to be_an_instance_of(Company)
+    end
+  end
+
+  describe "#categories" do
+    let(:categories){ subject.categories }
+
+    it "returns empty array by default" do
+      expect(categories).to be_empty
+    end
+
+    it "stores only category objects" do
+      expect{ categories << "string"}
+      .to raise_error(ActiveRecord::AssociationTypeMismatch)
+    end
+
+    it "returns associated categories" do
+      category = build(:category)
+      2.times { categories << category }
+
+      expect(categories.size).to be == 2
+      expect(categories.first).to be(category)
     end
   end
 
