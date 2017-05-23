@@ -120,6 +120,17 @@ RSpec.describe Operation do
     end
   end
 
+  describe "#company" do
+    it "returns nil by default" do
+      expect(subject.company).to be_nil
+    end
+
+    it "returns company object" do
+      subject = create(:operation)
+      expect(subject.company).to be_an_instance_of(Company)
+    end
+  end
+
   def validate_presence_with_message(msg)
     expect(subject).not_to be_valid
     expect(errors).to include(msg)

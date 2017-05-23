@@ -10,7 +10,7 @@ FactoryGirl.define do
     reporter "Abelardo Wehner"
 
     before(:build) do |operation|
-      operation.company = Company.new(name: "SB Komputery")
+      operation.company = create(:valid_company)
     end
 
     before(:create) do |operation|
