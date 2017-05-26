@@ -154,6 +154,86 @@ RSpec.describe Operation do
     end
   end
 
+  describe ".import" do
+    it "accepts parameters" do
+      expect{ Operation.import }.to raise_error(ArgumentError)
+      expect{ Operation.import(csv_path)}.to raise_error(ArgumentError)
+    end
+
+    it "triggers :foreach, :next, :each" do
+      expect(CSV).to receive(:foreach).with(*foreach_params)
+
+      Operation.import(csv_path, [], Category)
+    end
+
+    xit "triggers :create_from_row 10 times" do
+      expect(Operation).to receive(:create_from_row).exactly(11).times
+
+      Operation.import(csv_path, [], Category)
+    end
+
+    it "creates operations" do
+      expect{ Operation.import(csv_path, Company.available_resources, Category) }.to change{ Operation.count }.by(8)
+    end
+  end
+
+  describe ".create_from_row" do
+    let(:available_companies){  create(:microsoft)
+                                available_companies = Company.all.as_json}
+    it "accepts parameter" do
+      expect{ Operation.create_from_row }.to raise_error(ArgumentError)
+    end
+
+    it "triggers conversion method on row" do
+      row_dbl = double("CSV row", to_operation_attributes: true)
+      operation_dbl = double("Operation double", save: true)
+
+      allow(Operation).to receive(:new).and_return(operation_dbl)
+      expect(row_dbl).to receive(:to_operation_attributes).with([], Category)
+      expect(operation_dbl).to receive(:save)
+
+      Operation.create_from_row(row_dbl, [], Category)
+    end
+
+    it "creates operation" do
+      Hash.include OperationCompatible
+      row = build(:operation).attributes
+      .merge({kind: "strong;loose", company: "Microsoft",
+              operation_date: "11/11/2012", invoice_date: "12/12/2025"})
+
+      expect{ Operation.create_from_row(row, available_companies, Company)}
+      .to change{Operation.count}.by(1)
+      expect(Operation.last.company).to eq(Company.find_by(name: "Microsoft"))
+    end
+  end
+
+  describe "#existing_categories=" do
+    it "adds categories based on input collection" do
+      category = create(:category)
+      operation = build(:operation)
+
+      operation.existing_categories = [{"id" => category.id, "name" => category.name}]
+      operation.save
+      expect(operation.categories).to eq([category])
+    end
+
+    it "does not collapse with accept_nested_attributes" do
+      category = create(:category)
+      operation = build(:operation)
+
+      operation = Operation.new(operation.attributes.merge(categories_attributes))
+      operation.existing_categories = [{"id" => category.id, "name" => category.name}]
+      operation.save
+
+      expect(operation.categories.order(name: :asc)).to eq([category,
+       Category.find_by(name: "strong"), Category.find_by(name: "weak")])
+    end
+  end
+
+  def categories_attributes
+    {categories_attributes: [{name: "strong"}, {name: "weak"}]}
+  end
+
   def validate_presence_with_message(msg)
     expect(subject).not_to be_valid
     expect(errors).to include(msg)
@@ -162,6 +242,14 @@ RSpec.describe Operation do
   def validate_and_exclude_match(regex)
     expect(subject).not_to be_valid
     expect(errors).not_to include(match(regex))
+  end
+
+  def csv_path
+    Rails.root + "test/fixtures/import_example.csv"
+  end
+
+  def foreach_params
+    [csv_path, {headers: :first_row, return_headers: true, skip_blanks: true}]
   end
 
 end
