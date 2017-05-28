@@ -46,8 +46,10 @@ group :development, :test do
   gem 'pry-rails'
   gem 'rspec-rails'
   gem 'spring-commands-rspec'
+  gem 'rubocop', '~> 0.49.0', require: false
 
 end
+
 
 group :development do
   gem 'guard-bundler'

@@ -1,9 +1,14 @@
+# frozen_string_literal: true
+
+require 'English'
+
 module ExtendedMethods
   def create(*args, &block)
     super
   rescue => e
     raise unless e.is_a? ActiveRecord::RecordInvalid
-    raise $!, "#{e.message} (Class #{e.record.class.name}", $!.backtrace
+    raise $ERROR_INFO, "#{e.message} (Class #{e.record.class.name}",
+          $ERROR_INFO.backtrace
   end
 end
 

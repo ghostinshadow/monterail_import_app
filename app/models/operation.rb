@@ -1,17 +1,24 @@
-require 'csv'
+# frozen_string_literal: true
 
+require 'csv'
+# operation
 class Operation < ActiveRecord::Base
-  CSV_OPTIONS = {headers: :first_row,
-                 return_headers: true,
-                 skip_blanks: true}.freeze
+  CSV_OPTIONS = {
+    headers: :first_row,
+    return_headers: true,
+    skip_blanks: true
+  }.freeze
 
   belongs_to :company
   has_and_belongs_to_many :categories
   accepts_nested_attributes_for :categories
 
-  validates_presence_of :invoice_num, :invoice_date, :amount, :operation_date, :kind, :status
-  validates_numericality_of :amount, greater_than: 0
-  validates_uniqueness_of :invoice_num
+  validates :invoice_num, presence: true, uniqueness: true
+  validates :invoice_date, presence: true
+  validates :amount, presence: true, numericality: { greater_than: 0}
+  validates :operation_date, presence: true
+  validates :kind, presence: true
+  validates :status, presence: true
 
   def self.import(path, available_companies, category_model)
     CSV.foreach(path, CSV_OPTIONS) do |row|
@@ -26,7 +33,7 @@ class Operation < ActiveRecord::Base
 
   def existing_categories=(collection)
     Array(collection).each do |c|
-      categories << Category.find_by(id: c["id"])
+      categories << Category.find_by(id: c['id'])
     end
   end
 end
