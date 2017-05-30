@@ -156,26 +156,25 @@ RSpec.describe Operation do
   end
 
   describe '.import' do
-    it 'accepts parameters' do
-      expect { Operation.import }.to raise_error(ArgumentError)
-      expect { Operation.import(csv_path) }.to raise_error(ArgumentError)
+    it 'accepts hash of parameters' do
+      expect { Operation.import }.to raise_error(KeyError)
     end
 
     it 'triggers :foreach, :next, :each' do
       expect(CSV).to receive(:foreach).with(*foreach_params)
 
-      Operation.import(csv_path, [], Category)
+      Operation.import(import_params(csv_path))
     end
 
-    xit 'triggers :create_from_row 10 times' do
+    it 'triggers :create_from_row 11 times' do
       expect(Operation).to receive(:create_from_row).exactly(11).times
 
-      Operation.import(csv_path, [], Category)
+      Operation.import(import_params(csv_path))
     end
 
     it 'creates operations' do
       expect do
-        Operation.import(csv_path, Company.available_resources, Category)
+        Operation.import(import_params(csv_path, Company.available_resources))
       end
         .to change { Operation.count }.by(8)
     end
@@ -187,8 +186,8 @@ RSpec.describe Operation do
       Company.all.as_json
     end
 
-    it 'accepts parameter' do
-      expect { Operation.create_from_row }.to raise_error(ArgumentError)
+    it 'accepts hash' do
+      expect { Operation.create_from_row }.to raise_error(KeyError)
     end
 
     it 'triggers conversion method on row' do
@@ -196,10 +195,13 @@ RSpec.describe Operation do
       operation_dbl = double('Operation double', save: true)
 
       allow(Operation).to receive(:new).and_return(operation_dbl)
-      expect(row_dbl).to receive(:to_operation_attributes).with([], Category)
+      expected_attributes = { available_companies: [],
+                              category_model: Category }
+      expect(row_dbl)
+        .to receive(:to_operation_attributes).with(expected_attributes)
       expect(operation_dbl).to receive(:save)
 
-      Operation.create_from_row(row_dbl, [], Category)
+      Operation.create_from_row(row_params(row_dbl))
     end
 
     it 'creates operation' do
@@ -209,7 +211,7 @@ RSpec.describe Operation do
                               operation_date: '11/11/2012',
                               invoice_date: '12/12/2025')
 
-      expect { Operation.create_from_row(row, available_companies, Company) }
+      expect { Operation.create_from_row(row_params(row, available_companies)) }
         .to change { Operation.count }.by(1)
       expect(Operation.last.company).to eq(Company.find_by(name: 'Microsoft'))
     end
@@ -241,6 +243,18 @@ RSpec.describe Operation do
                 Category.find_by(name: 'strong'),
                 Category.find_by(name: 'weak')])
     end
+  end
+
+  def import_params(path, companies = [])
+    { path: path,
+      available_companies: companies,
+      category_model: Category }
+  end
+
+  def row_params(row, companies = [])
+    { row: row,
+      available_companies: companies,
+      category_model: Category }
   end
 
   def categories_attributes

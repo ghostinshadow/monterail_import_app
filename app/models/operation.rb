@@ -20,15 +20,16 @@ class Operation < ApplicationRecord
   validates :kind, presence: true
   validates :status, presence: true
 
-  def self.import(path, available_companies, category_model)
-    CSV.foreach(path, CSV_OPTIONS) do |row|
-      create_from_row(row, available_companies, category_model)
+  def self.import(hsh = {})
+    CSV.foreach(hsh.fetch(:path), CSV_OPTIONS) do |row|
+      create_from_row(hsh.except!(:path).merge!(row: row))
     end
   end
 
-  def self.create_from_row(row, available_companies, category_model)
-    e = new row.to_operation_attributes(available_companies, category_model)
-    e.save
+  def self.create_from_row(hsh = {})
+    category = new hsh.fetch(:row)
+                      .to_operation_attributes(hsh.except!(:row))
+    category.save
   end
 
   def existing_categories=(collection)

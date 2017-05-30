@@ -10,9 +10,9 @@ module OperationCompatible
     @operation_attributes ||= to_h.symbolize_keys
   end
 
-  def to_operation_attributes(available_companies, category_model)
-    add_company_id(available_companies)
-    add_embedded_categories(category_model)
+  def to_operation_attributes(hsh = {})
+    add_company_id(hsh.fetch(:available_companies))
+    add_embedded_categories(hsh.fetch(:category_model))
     reform_invalid_dates
     operation_attributes
   end
@@ -46,7 +46,7 @@ module OperationCompatible
     categories_names = Array(operation_attributes.fetch(:kind)&.split(';'))
     categories = categories_names.each_with_object([]) do |name, memo|
       model = category_model.find_or_initialize_by(name: name.downcase)
-      memo << model.attributes.except(*TIMESTAMPS)
+      memo << model.attributes.except!(*TIMESTAMPS)
     end
     assign_attribute(:categories_attributes) { categories.reject(&ID_FILTER) }
     assign_attribute(:existing_categories) { categories.select(&ID_FILTER) }

@@ -25,14 +25,20 @@ RSpec.describe OperationCompatible do
   end
 
   describe '#to_operation_attributes' do
-    it 'expects argument' do
-      expect { hashlike_object.to_operation_attributes }
-        .to raise_error(ArgumentError)
+    let(:param_hash) do
+      { available_companies: available_companies, category_model: Category }
+    end
+
+    it 'requires hash as parameter' do
+      expect do
+        hashlike_object.to_operation_attributes({})
+      end
+        .to raise_error(KeyError)
     end
 
     it 'requires kind attribute to be set' do
       expect do
-        hashlike_object.to_operation_attributes(available_companies, Category)
+        hashlike_object.to_operation_attributes(param_hash)
       end
         .to raise_error(KeyError)
     end
@@ -46,16 +52,14 @@ RSpec.describe OperationCompatible do
       expect(hashlike_object).to receive(:operation_attributes)
       expect(hashlike_object).to receive(:reform_invalid_dates)
 
-      hashlike_object.to_operation_attributes(available_companies,
-                                              Category)
+      hashlike_object.to_operation_attributes(param_hash)
     end
 
     it 'adds company_id to attributes based on name' do
       assign_kind
       assign_company
 
-      expect(hashlike_object.to_operation_attributes(available_companies,
-                                                     Category))
+      expect(hashlike_object.to_operation_attributes(param_hash))
         .to include(company_id: 8)
     end
 
@@ -64,8 +68,7 @@ RSpec.describe OperationCompatible do
       attributes = [category_attributes_base('available'),
                     category_attributes_base('strong')]
 
-      expect(hashlike_object.to_operation_attributes(available_companies,
-                                                     Category))
+      expect(hashlike_object.to_operation_attributes(param_hash))
         .to include(categories_attributes: attributes)
     end
 
@@ -73,8 +76,7 @@ RSpec.describe OperationCompatible do
       category = create(:category)
       assign_kind
 
-      expect(hashlike_object.to_operation_attributes(available_companies,
-                                                     Category))
+      expect(hashlike_object.to_operation_attributes(param_hash))
         .to include(categories_attributes: [category_attributes_base('strong')],
                     existing_categories: [attributes_wo_timestamp(category)])
     end
@@ -83,17 +85,17 @@ RSpec.describe OperationCompatible do
       category = create(:category)
       assign_kind('Available;strong')
 
-      expect(hashlike_object.to_operation_attributes(available_companies,
-                                                     Category))
+      expect(hashlike_object.to_operation_attributes(param_hash))
         .to include(categories_attributes: [category_attributes_base('strong')],
                     existing_categories: [attributes_wo_timestamp(category)])
     end
 
     it 'handles sybolized companies' do
       assign_kind
-
+      param_hash = { available_companies: symbolized_companies,
+                     category_model: Category }
       expect do
-        hashlike_object.to_operation_attributes(symbolized_companies, Category)
+        hashlike_object.to_operation_attributes(param_hash)
       end
         .to raise_error(KeyError)
     end
@@ -104,8 +106,7 @@ RSpec.describe OperationCompatible do
       assign_operation_date('12/28/2012')
       assign_invoice_date('12/27/2012')
 
-      attributes = hashlike_object.to_operation_attributes(available_companies,
-                                                           Category)
+      attributes = hashlike_object.to_operation_attributes(param_hash)
       subject = Operation.new(attributes)
       expect(subject).not_to be_valid
       expect(subject.errors.full_messages)
@@ -118,8 +119,7 @@ RSpec.describe OperationCompatible do
       assign_operation_date('2012-11-24')
       assign_invoice_date('2012-10-24')
 
-      attributes = hashlike_object.to_operation_attributes(available_companies,
-                                                           Category)
+      attributes = hashlike_object.to_operation_attributes(param_hash)
       subject = Operation.new(attributes)
       expect(subject).not_to be_valid
       expect(subject.errors.full_messages)
@@ -132,8 +132,7 @@ RSpec.describe OperationCompatible do
       assign_operation_date('17-10-2012')
       assign_invoice_date('19-09-2012')
 
-      attributes = hashlike_object.to_operation_attributes(available_companies,
-                                                           Category)
+      attributes = hashlike_object.to_operation_attributes(param_hash)
       subject = Operation.new(attributes)
       expect(subject).not_to be_valid
       expect(subject.errors.full_messages)
