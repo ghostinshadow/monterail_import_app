@@ -2,7 +2,7 @@
 
 require 'csv'
 # operation
-class Operation < ActiveRecord::Base
+class Operation < ApplicationRecord
   CSV_OPTIONS = {
     headers: :first_row,
     return_headers: true,
@@ -15,7 +15,7 @@ class Operation < ActiveRecord::Base
 
   validates :invoice_num, presence: true, uniqueness: true
   validates :invoice_date, presence: true
-  validates :amount, presence: true, numericality: { greater_than: 0}
+  validates :amount, presence: true, numericality: { greater_than: 0 }
   validates :operation_date, presence: true
   validates :kind, presence: true
   validates :status, presence: true

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # named company
-class Company < ActiveRecord::Base
+class Company < ApplicationRecord
   has_many :operations
 
   validates :name, presence: true
