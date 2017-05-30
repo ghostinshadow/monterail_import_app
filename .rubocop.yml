@@ -1,0 +1,10 @@
+AllCops:
+  TargetRubyVersion: 2.3
+  Include:
+    - app/models/
+    - app/controllers/
+    - lib/**/*.rb
+  Exclude:
+    - db/schema.rb
+Metrics/BlockLength:
+  ExcludedMethods: ['describe', 'context']
