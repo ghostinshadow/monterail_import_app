@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Operation do
+  include_context 'import helpers'
+
   describe 'attributes' do
     it { is_expected.to respond_to(:invoice_num) }
     it { is_expected.to respond_to(:invoice_date) }
@@ -172,6 +174,11 @@ RSpec.describe Operation do
       Operation.import(import_params(csv_path))
     end
 
+    it 'yields 11 times' do
+      expect{|b| Operation.import(import_params(csv_path), &b) }
+        .to yield_control
+    end
+
     it 'creates operations' do
       expect do
         Operation.import(import_params(csv_path, Company.available_resources))
@@ -215,6 +222,16 @@ RSpec.describe Operation do
         .to change { Operation.count }.by(1)
       expect(Operation.last.company).to eq(Company.find_by(name: 'Microsoft'))
     end
+
+    it 'triggers success callback if operation saved' do
+      stub_operation_initialization
+      allow_any_instance_of(Operation).to receive(:save).and_return(true)
+
+      success_callback  = ->(e){ 1 }
+      expect(success_callback).to receive(:call)
+
+      Operation.create_from_row({row: {}, success_callback: success_callback})
+    end
   end
 
   describe '#existing_categories=' do
@@ -245,10 +262,9 @@ RSpec.describe Operation do
     end
   end
 
-  def import_params(path, companies = [])
-    { path: path,
-      available_companies: companies,
-      category_model: Category }
+  def stub_operation_initialization
+    allow(Operation).to receive(:new).and_return(Operation.allocate)
+    allow_any_instance_of(Hash).to receive(:to_operation_attributes)
   end
 
   def row_params(row, companies = [])
@@ -269,10 +285,6 @@ RSpec.describe Operation do
   def validate_and_exclude_match(regex)
     expect(subject).not_to be_valid
     expect(errors).not_to include(match(regex))
-  end
-
-  def csv_path
-    Rails.root + 'test/fixtures/import_example.csv'
   end
 
   def foreach_params

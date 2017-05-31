@@ -1,0 +1,14 @@
+.progress
+  .progress-bar.progress-bar-success{:style => "width: 0%"}
+    %span.sr-only 0% Complete (success)
+  .progress-bar.progress-bar-warning.progress-bar-striped{:style => "width: 0%"}
+    %span.sr-only 0% Complete (skipped)
+%h3 Import
+= form_for( :import_data, url: import_operations_path, remote: true, html: {id: 'import_data'}) do |f|
+  = f.label "File"
+  = f.file_field :file, class: 'form-control'
+  %br
+  = f.submit "Import operations", class: "btn btn-success"
+= subscribe_to('/import/status')
+
+= javascript_include_tag "import"

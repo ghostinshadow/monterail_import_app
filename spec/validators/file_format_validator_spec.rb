@@ -4,7 +4,7 @@ RSpec.describe FileFormatValidator do
   let(:formats) { [Mime::CSV] }
   subject do
     FileFormatValidator.new(attributes: [:file],
-                            class: OperationImport, formats: formats)
+                            class: ImportForm, formats: formats)
   end
 
   it { is_expected.to be_kind_of(ActiveModel::EachValidator) }
@@ -15,7 +15,7 @@ RSpec.describe FileFormatValidator do
 
   it 'works for empty file attribute' do
     subject = FileFormatValidator.new(attributes: [:file])
-    record = OperationImport.new
+    record = ImportForm.new
 
     subject.validate_each(record, :file, record.file)
   end

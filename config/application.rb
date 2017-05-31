@@ -19,6 +19,7 @@ module ImportApp
     Dir[File.join(Rails.root, "lib", "*.rb")].each {|l| require l }
     config.autoload_paths += Dir[File.join(Rails.root, "lib", "core_ext", "*.rb")].each {|l| require l }
     config.autoload_paths += [Rails.root.join('app', 'validators').to_s]
+    config.autoload_paths += [Rails.root.join('app', 'services').to_s]
 
     config.before_configuration do
       env_file = File.join(Rails.root, 'config', 'local_env.yml')

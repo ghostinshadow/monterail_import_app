@@ -8,6 +8,7 @@ class Operation < ApplicationRecord
     return_headers: true,
     skip_blanks: true
   }.freeze
+  DEFAULT_CALLBACK = -> {}
 
   belongs_to :company
   has_and_belongs_to_many :categories
@@ -23,13 +24,18 @@ class Operation < ApplicationRecord
   def self.import(hsh = {})
     CSV.foreach(hsh.fetch(:path), CSV_OPTIONS) do |row|
       create_from_row(hsh.except!(:path).merge!(row: row))
+      yield if block_given?
     end
   end
 
   def self.create_from_row(hsh = {})
-    category = new hsh.fetch(:row)
+    operation = new hsh.fetch(:row)
                       .to_operation_attributes(hsh.except!(:row))
-    category.save
+    if operation.save
+      hsh.fetch(:success_callback, DEFAULT_CALLBACK).()
+    else
+      hsh.fetch(:failure_callback, DEFAULT_CALLBACK).()
+    end
   end
 
   def existing_categories=(collection)

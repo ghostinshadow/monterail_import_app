@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryGirl.define do
-  factory :attachment, class: OperationImport do
+  factory :attachment, class: ImportForm do
     factory :file_with_txt_format do
       path = Rails.root.join('test', 'fixtures', 'import_example.txt')
       attributes = { tempfile: File.new(path),
