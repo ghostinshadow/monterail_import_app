@@ -1,7 +1,8 @@
-- flash.each do |name, msg|
-  - if msg.is_a?(String)
-    .callout{class: flash_classes[name], "data-closable" => ''}
-      %i.material-icons{"data-notify" => "icon"} #{icon_classes[name]}
-      = msg
-      = button_tag "aria-hidden" => "true", "data-dismiss" => "alert", type: "button", class: 'close' do
-        %span &times;
+.flashes
+  - flash.each do |name, msg|
+    - if msg.is_a?(String)
+      .callout{class: flash_classes[name], "data-closable" => ''}
+        %i.material-icons{"data-notify" => "icon"} #{icon_classes[name]}
+        = msg
+        = button_tag "aria-hidden" => "true", "data-dismiss" => "alert", type: "button", class: 'close' do
+          %span &times;
