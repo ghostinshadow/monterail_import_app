@@ -30,11 +30,11 @@ class Operation < ApplicationRecord
 
   def self.create_from_row(hsh = {})
     operation = new hsh.fetch(:row)
-                      .to_operation_attributes(hsh.except!(:row))
+                       .to_operation_attributes(hsh.except!(:row))
     if operation.save
-      hsh.fetch(:success_callback, DEFAULT_CALLBACK).()
+      hsh.fetch(:success_callback, DEFAULT_CALLBACK).call
     else
-      hsh.fetch(:failure_callback, DEFAULT_CALLBACK).()
+      hsh.fetch(:failure_callback, DEFAULT_CALLBACK).call
     end
   end
 

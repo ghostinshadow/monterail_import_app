@@ -15,6 +15,6 @@ class ImportForm
   end
 
   def to_path
-	file.path
+    file.path
   end
 end

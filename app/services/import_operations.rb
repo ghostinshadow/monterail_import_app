@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# import service object
 class ImportOperations
   attr_accessor :failures, :successes, :file_size
   WEBSOCKET_CHANNEL = '/import/status'
@@ -49,7 +50,7 @@ class ImportOperations
 
   def calculate_file_size
     CSV.foreach(form.to_path,
-                Operation::CSV_OPTIONS) {|_| increment_file_size }
+                Operation::CSV_OPTIONS) { |_| increment_file_size }
   end
 
   def statistics
@@ -61,7 +62,6 @@ class ImportOperations
   def error_message
     'CSV file should be provided'
   end
-  
   attr_reader :form, :category_model, :available_companies,
               :success_callback, :failure_callback
 

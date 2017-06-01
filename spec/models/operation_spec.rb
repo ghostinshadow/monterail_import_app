@@ -175,7 +175,7 @@ RSpec.describe Operation do
     end
 
     it 'yields 11 times' do
-      expect{|b| Operation.import(import_params(csv_path), &b) }
+      expect { |b| Operation.import(import_params(csv_path), &b) }
         .to yield_control
     end
 
@@ -227,10 +227,10 @@ RSpec.describe Operation do
       stub_operation_initialization
       allow_any_instance_of(Operation).to receive(:save).and_return(true)
 
-      success_callback  = ->(e){ 1 }
+      success_callback = ->(_) { 1 }
       expect(success_callback).to receive(:call)
 
-      Operation.create_from_row({row: {}, success_callback: success_callback})
+      Operation.create_from_row(row: {}, success_callback: success_callback)
     end
   end
 
